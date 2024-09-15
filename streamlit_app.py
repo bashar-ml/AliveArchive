@@ -27,6 +27,8 @@ def search_by_text(query):
     embeddings_query = model.encode(query)
     similarities = torch.matmul(torch.tensor(embeddings), torch.tensor(embeddings_query).T)
     largest_similarity_index = torch.argmax(similarities)
+
+    print(similarities[largest_similarity_index])
     return [json_data[largest_similarity_index]]
 
     # results = []
@@ -54,6 +56,7 @@ if search_option == "Text":
         if results:
             st.write(f"Found {len(results)} results:")
             for i, result in enumerate(results):
+                # import pdb; pdb.set_trace()
                 st.write(f"**Result {i + 1}:**")
                 st.audio(result['path'])
                 st.write(f"Transcription: {result['sentence']}")
