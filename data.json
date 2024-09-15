@@ -1,0 +1,12 @@
+[
+    {
+        "audio_file": "audio1.mp3",
+        "transcription": "This is the first transcription.",
+        "metadata": { "speaker": "John Doe", "duration": "2:30" }
+    },
+    {
+        "audio_file": "audio2.mp3",
+        "transcription": "Another example transcription.",
+        "metadata": { "speaker": "Jane Smith", "duration": "3:45" }
+    }
+]
