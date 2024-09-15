@@ -1,18 +1,39 @@
 import streamlit as st
 import json
 import os
+from sentence_transformers import SentenceTransformer
+import torch
 
 # Load data from JSON
 with open("data.json", "r") as f:
     data = json.load(f)
 
+print("Load the semantic model.")
+model = SentenceTransformer("Omartificial-Intelligence-Space/mpnet-base-all-nli-triplet-Arabic-mpnet_base")
+
+# Load the JSON data from a file
+json_file_path = "common_voice_metadata.json"
+with open(json_file_path, "r", encoding="utf-8") as json_file:
+    json_data = json.load(json_file)
+
+# Extract the sentences from the JSON data
+sentences = [item['sentence'] for item in json_data]
+
+print("Load Embeddings")
+embeddings = torch.load("embds.pt")
+
 # Helper function to search text
 def search_by_text(query):
-    results = []
-    for item in data:
-        if query.lower() in item['transcription'].lower():
-            results.append(item)
-    return results
+    embeddings_query = model.encode(query)
+    similarities = torch.matmul(torch.tensor(embeddings), torch.tensor(embeddings_query).T)
+    largest_similarity_index = torch.argmax(similarities)
+    return [json_data[largest_similarity_index]]
+
+    # results = []
+    # for item in data:
+    #     if query.lower() in item['transcription'].lower():
+    #         results.append(item)
+    # return results
 
 # Helper function to search by audio similarity (mock function)
 def search_by_audio(audio_file):
@@ -34,8 +55,10 @@ if search_option == "Text":
             st.write(f"Found {len(results)} results:")
             for i, result in enumerate(results):
                 st.write(f"**Result {i + 1}:**")
-                st.audio(result['audio_file'])
-                st.write(f"Transcription: {result['transcription']}")
+                st.audio(result['path'])
+                st.write(f"Transcription: {result['sentence']}")
+                st.write(f"Gender: {result['gender']}")
+                st.write(f"Age: {result['age']}")
                 st.write("---")
         else:
             st.write("No results found.")
