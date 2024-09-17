@@ -7,9 +7,19 @@ import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from tashaphyne.stemming import ArabicLightStemmer
+from googletrans import Translator
 
 # Initialize the Arabic light stemmer
 stemmer = ArabicLightStemmer()
+
+# Initialize the translator
+translator = Translator()
+
+# Function to translate text from Arabic to English
+def translate_arabic_to_english(text):
+    # Perform the translation
+    translation = translator.translate(text, src='ar', dest='en')
+    return translation.text
 
 # Function to preprocess the Arabic text (with stemming + removing punctuation)
 def preprocess_text(text):
@@ -136,6 +146,9 @@ if search_option == "Text":
                 path = result['path'].replace("/home/vscode/.cache/huggingface/datasets/downloads/extracted/806b3f94e57426271901dfd6c41899e3ae63486dfd11f50e0a2d6d3c9bc0e090/", "./")
                 st.audio(path)
                 st.write(f"Transcription: {result['sentence']}")
+                # Perform the translation
+                english_translation = translate_arabic_to_english(result['sentence'])
+                st.write(f"Translation: {english_translation}")
                 st.write(f"Gender: {result['gender']}")
                 st.write(f"Age: {result['age']}")
                 st.write("---")
