@@ -1,5 +1,6 @@
 streamlit
 soundfile
 torch
-sentence-transformers
 librosa
+tashaphyne
+pydub
