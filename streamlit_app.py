@@ -188,7 +188,7 @@ def search_by_audio(audio_file):
     return results
 
 # Sidebar for navigation
-st.sidebar.title("AliveArchive Search")
+st.sidebar.title("AliveArchive")
 search_option = st.sidebar.radio("Search by:", ("Text", "Speech"))
 
 MAX_OUTPUT=10
