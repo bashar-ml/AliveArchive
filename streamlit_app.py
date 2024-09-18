@@ -15,6 +15,41 @@ stemmer = ArabicLightStemmer()
 # Initialize the translator
 translator = Translator()
 
+def normalize_text(text):
+    # Remove "ال" from the beginning of words
+    text = re.sub(r'\bال', '', text)
+    # Replace "تاء" with "هاء"
+    text = text.replace('ة', 'ه')
+
+    # Normalize all forms of alef to simple "ا"
+    text = re.sub(r'[أإآا]', 'ا', text)
+
+    # Remove all Tashkeel (Arabic diacritics)
+    tashkeel = r'[ًٌٍَُِّْ]'
+    text = re.sub(tashkeel, '', text)
+
+    return text
+
+# Exact Match Search Function
+def exact_match_search(query, sentences):
+    normalized_query = normalize_text(query)
+    
+    # Normalize sentences
+    normalized_sentences = [normalize_text(sentence) for sentence in sentences]
+    
+    # Check if the normalized query is a substring of any sentence
+    matched_sentences = [
+        json_data[i] for i, sentence in enumerate(normalized_sentences)
+        if normalized_query in sentence
+    ]
+    
+    # If matches are found, return them with exact=True
+    if matched_sentences:
+        return matched_sentences, True
+    else:
+        return None, False
+
+
 # Function to translate text from Arabic to English
 def translate_arabic_to_english(text):
     # Perform the translation
@@ -23,6 +58,7 @@ def translate_arabic_to_english(text):
 
 # Function to preprocess the Arabic text (with stemming + removing punctuation)
 def preprocess_text(text):
+    text = normalize_text(text)
     # Remove punctuation
     text = re.sub(r'[^\w\s]', '', text)
     
@@ -93,22 +129,45 @@ def find_most_similar_sentence(query, preprocessed_sentences, tfidf_matrix, thre
 
 
 
-
 # print("Load Embeddings")
 # embeddings = torch.load("embds.pt")
 
 # Helper function to search text
 def search_by_text(query):
+
+    query = normalize_text(query)
+
+    exact_match_results, exact = exact_match_search(query, sentences)
+        
+    if exact_match_results:
+        # If exact match is found, return it with `exact=True`
+        return exact_match_results, exact
+
+    tokens = query.split()
+    if len(tokens)>1:
+        exact_match_results = []
+        for token in tokens:
+        # First, try exact match search
+            exact_match_result, exact = exact_match_search(token, sentences)
+            
+            if exact_match_result:
+                exact_match_results.extend(exact_match_result)
+                # If exact match is found, return it with `exact=True`
+        if len(exact_match_results)>0:
+            return exact_match_results, True
+            
+    
     # Find the most similar sentence
     most_similar_sentence, score = find_most_similar_sentence(query, preprocessed_sentences, tfidf_matrix)
 
     # Output the result
     if most_similar_sentence:
-        return [most_similar_sentence]
+        return [most_similar_sentence], False
         # print(f"Most similar sentence: {most_similar_sentence}")
         # print(f"Similarity score: {score}")
     else:
         print("No sentence meets the threshold.")
+        return [], False
     # embeddings_query = model.encode(query)
     # similarities = torch.matmul(torch.tensor(embeddings), torch.tensor(embeddings_query).T)
     # largest_similarity_index = torch.argmax(similarities)
@@ -132,26 +191,35 @@ def search_by_audio(audio_file):
 st.sidebar.title("AliveArchive Search")
 search_option = st.sidebar.radio("Search by:", ("Text", "Speech"))
 
+MAX_OUTPUT=10
 # Main page content based on search option
 if search_option == "Text":
     st.title("Text Search")
-    query = st.text_input("Enter your search query:")
-    if st.button("Search"):
-        results = search_by_text(query)
+
+    # Form to capture text and submit on Enter
+    with st.form(key="search_form"):
+        query = st.text_input("Enter your search query:")
+        submit_button = st.form_submit_button(label="Search")
+
+    if submit_button:
+        results, exact = search_by_text(query)
+        results = results[:MAX_OUTPUT]
         if results:
-            st.write(f"Found {len(results)} results:")
+            if exact:
+                st.write(f"Found {len(results)} exact match result(s):")
+            else:
+                st.write(f"Found {len(results)} similar result(s):")
             for i, result in enumerate(results):
-                # import pdb; pdb.set_trace()
                 st.write(f"**Result {i + 1}:**")
                 path = result['path'].replace("/home/vscode/.cache/huggingface/datasets/downloads/extracted/806b3f94e57426271901dfd6c41899e3ae63486dfd11f50e0a2d6d3c9bc0e090/", "./")
                 st.audio(path)
                 st.write(f"Transcription: {result['sentence']}")
-                # Perform the translation
                 english_translation = translate_arabic_to_english(result['sentence'])
                 st.write(f"Translation: {english_translation}")
                 st.write(f"Gender: {result['gender']}")
                 st.write(f"Age: {result['age']}")
                 st.write("---")
+
         else:
             st.write("No results found.")
 
