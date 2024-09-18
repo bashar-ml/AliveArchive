@@ -1,7 +1,7 @@
 # 🎈 AliveArchive
 
 
-### How to run it on your own machine
+### How to run it on your local machine
 
 1. Install the requirements
 
