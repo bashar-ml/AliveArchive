@@ -213,11 +213,21 @@ if search_option == "Text":
                 st.write(f"**Result {i + 1}:**")
                 path = result['path'].replace("/home/vscode/.cache/huggingface/datasets/downloads/extracted/806b3f94e57426271901dfd6c41899e3ae63486dfd11f50e0a2d6d3c9bc0e090/", "./")
                 st.audio(path)
-                st.write(f"Transcription: {result['sentence']}")
                 english_translation = translate_arabic_to_english(result['sentence'])
-                st.write(f"Translation: {english_translation}")
-                st.write(f"Gender: {result['gender']}")
-                st.write(f"Age: {result['age']}")
+                st.json(
+                    {
+                        "Transcription": result['sentence'],
+                        "Translation": english_translation,
+                        "Gender": result['gender'],
+                        "Age": result['age'],
+                    },
+                    expanded=2,
+                )
+                # st.write(f"Transcription: {result['sentence']}")
+                
+                # st.write(f"Translation: {english_translation}")
+                # st.write(f"Gender: {result['gender']}")
+                # st.write(f"Age: {result['age']}")
                 st.write("---")
 
         else:
