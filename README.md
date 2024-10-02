@@ -1,4 +1,4 @@
-# 🎈 AliveArchive
+# 🎈 AliveArchive | Speech & Text
 
 
 ### How to run it on your local machine
