@@ -16,6 +16,7 @@ stemmer = ArabicLightStemmer()
 translator = Translator()
 
 def normalize_text(text):
+    text = text.replace("الله", "allah")
     # Remove "ال" from the beginning of words
     text = re.sub(r'\bال', '', text)
     # Replace "تاء" with "هاء"
@@ -27,7 +28,7 @@ def normalize_text(text):
     # Remove all Tashkeel (Arabic diacritics)
     tashkeel = r'[ًٌٍَُِّْ]'
     text = re.sub(tashkeel, '', text)
-
+    text = text.replace("allah", "الله")
     return text
 
 # Exact Match Search Function
